@@ -65,3 +65,8 @@ kNN compares entire 784-pixel vectors at once — similar letters naturally have
 
 ## License
 MIT License — free to use with credit to Data Craft team.
+
+## Connect With Us
+If you liked this project, feel free to give it a ⭐ and connect with us!
+**Mahesh Kumar** — [LinkedIn](https://www.linkedin.com/in/mahesh-kumar-kh4tr1)
+**Rajesh Kumar** — [LinkedIn](https://www.linkedin.com/in/rajesh-kumar-614102338)
