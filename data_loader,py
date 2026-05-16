@@ -1,0 +1,124 @@
+import numpy as np
+import struct
+import matplotlib.pyplot as plt
+import os
+
+# ============================================
+# UPDATE THIS PATH TO YOUR LOCAL EMNIST FOLDER
+# ============================================
+DATA_PATH = r"F:\IDE\Python\PyP\emnist_source_files"
+
+
+def load_images(filepath):
+    with open(filepath, 'rb') as f:
+        magic, num_images, rows, cols = struct.unpack('>IIII', f.read(16))
+        images = np.frombuffer(f.read(), dtype=np.uint8)
+        images = images.reshape(num_images, rows, cols)
+    return images
+
+def load_labels(filepath):
+    with open(filepath, 'rb') as f:
+        magic, num_labels = struct.unpack('>II', f.read(8))
+        labels = np.frombuffer(f.read(), dtype=np.uint8)
+    return labels
+
+
+print("Loading EMNIST Letters dataset...")
+train_images = load_images(os.path.join(DATA_PATH, 'emnist-letters-train-images-idx3-ubyte'))
+train_labels = load_labels(os.path.join(DATA_PATH, 'emnist-letters-train-labels-idx1-ubyte'))
+test_images  = load_images(os.path.join(DATA_PATH, 'emnist-letters-test-images-idx3-ubyte'))
+test_labels  = load_labels(os.path.join(DATA_PATH, 'emnist-letters-test-labels-idx1-ubyte'))
+
+print(f"  Train images shape : {train_images.shape}")
+print(f"  Train labels shape : {train_labels.shape}")
+print(f"  Test  images shape : {test_images.shape}")
+print(f"  Test  labels shape : {test_labels.shape}")
+
+
+print("\nFixing image orientation (EMNIST is stored rotated)...")
+def fix_orientation(images):
+    fixed = np.array([np.fliplr(np.rot90(img, -1)) for img in images])
+    return fixed
+
+train_images = fix_orientation(train_images)
+test_images  = fix_orientation(test_images)
+print("  Orientation fixed.")
+
+
+print("\nNormalizing pixel values to [0, 1]...")
+train_images = train_images.astype(np.float32) / 255.0
+test_images  = test_images.astype(np.float32)  / 255.0
+print(f"  Pixel min: {train_images.min():.2f}, max: {train_images.max():.2f}")
+
+
+print("\nAdjusting labels from 1-26 to 0-25...")
+train_labels = train_labels - 1
+test_labels  = test_labels  - 1
+
+print(f"  Label range: {train_labels.min()} to {train_labels.max()}")
+print(f"  Total classes: {len(np.unique(train_labels))}")
+
+
+print("\nPlotting class distribution...")
+alphabet = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+class_counts = [np.sum(train_labels == i) for i in range(26)]
+
+plt.figure(figsize=(14, 5))
+bars = plt.bar(alphabet, class_counts, color='steelblue', edgecolor='white', linewidth=0.5)
+plt.title('Class Distribution — EMNIST Letters (Training Set)', fontsize=14)
+plt.xlabel('Alphabet Class (A–Z represent Aa–Zz merged)')
+plt.ylabel('Number of Images')
+plt.xticks(fontsize=11)
+
+for bar, count in zip(bars, class_counts):
+    plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 50,
+             str(count), ha='center', va='bottom', fontsize=7)
+
+plt.tight_layout()
+plt.savefig(os.path.join(DATA_PATH, 'class_distribution.png'), dpi=150)
+plt.show()
+print("  Saved: class_distribution.png")
+
+
+print("\nPlotting sample images per class...")
+fig, axes = plt.subplots(26, 5, figsize=(10, 52))
+fig.suptitle('Sample Images per Class (Aa–Zz)', fontsize=16, y=1.001)
+
+for class_idx in range(26):
+    indices = np.where(train_labels == class_idx)[0]
+    samples = np.random.choice(indices, 5, replace=False)
+    for col, sample_idx in enumerate(samples):
+        ax = axes[class_idx, col]
+        ax.imshow(train_images[sample_idx], cmap='gray')
+        ax.axis('off')
+        if col == 0:
+            ax.set_title(alphabet[class_idx], fontsize=10, loc='left', pad=2)
+
+plt.tight_layout()
+plt.savefig(os.path.join(DATA_PATH, 'sample_images.png'), dpi=100)
+plt.show()
+print("  Saved: sample_images.png")
+
+
+print("\nSaving cleaned data to emnist_letters_clean.npz ...")
+save_path = os.path.join(DATA_PATH, 'emnist_letters_clean.npz')
+np.savez_compressed(save_path,
+                    train_images=train_images,
+                    train_labels=train_labels,
+                    test_images=test_images,
+                    test_labels=test_labels)
+
+print(f"  Saved to: {save_path}")
+
+
+print("\n" + "="*50)
+print("DATA LOADING COMPLETE — SUMMARY")
+print("="*50)
+print(f"  Training samples : {len(train_images)}")
+print(f"  Test samples     : {len(test_images)}")
+print("  Image size       : 28 x 28 pixels (grayscale)")
+print("  Classes          : 26 (A-Z, each merges upper+lower)")
+print("  Pixel range      : [0.0, 1.0] normalized")
+print("  Labels range     : [0, 25]")
+print("="*50)
+print("\nNext step: Run feature_extraction.py")
