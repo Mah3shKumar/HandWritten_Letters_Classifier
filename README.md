@@ -24,6 +24,13 @@ using traditional machine learning algorithms.
 EMNIST Letters — 124,800 training images, 26 classes
 Download: https://www.kaggle.com/datasets/crawford/emnist
 
+## Required Files
+After extracting the zip, you only need these 4 files:
+emnist-letters-train-images-idx3-ubyte
+emnist-letters-train-labels-idx1-ubyte
+emnist-letters-test-images-idx3-ubyte
+emnist-letters-test-labels-idx1-ubyte
+
 ## Project Files
 - data_loader.py — loads and preprocesses EMNIST dataset
 - feature_extraction.py — flattens images to 784 feature vectors
@@ -31,6 +38,10 @@ Download: https://www.kaggle.com/datasets/crawford/emnist
 - evaluation.py — confusion matrix and all metrics
 - improvements.py — feature importance and error analysis
 - drawing_gui.py — live drawing interface for real-time prediction
+
+## Setup
+Update DATA_PATH in every .py file to your local folder:
+DATA_PATH = r"your\path\to\emnist_source_files"
 
 ## Requirements
 pip install numpy pandas matplotlib scikit-learn pillow joblib
